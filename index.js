@@ -11,19 +11,23 @@ const taskRoutes = require('./routes/tasks');
 const dealRoutes = require('./routes/deals');
 const reportRoutes = require('./routes/reports');
 const notificationRoutes = require('./routes/notifications');
-const analyticsRoutes = require('./routes/advanced-analytics'); // Thêm route mới
+const analyticsRoutes = require('./routes/advanced-analytics');
 
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'https://frontend-f3fbtwpwx-dang-khois-projects.vercel.app',
     methods: ['GET', 'POST']
   }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://frontend-f3fbtwpwx-dang-khois-projects.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(helmet());
 app.use(express.json());
 
@@ -59,14 +63,13 @@ const connectWithRetry = async (retries = 5, delay = 5000) => {
 const startServer = async () => {
   try {
     const pool = await connectWithRetry();
-
     app.use('/api/users', userRoutes(pool, io));
     app.use('/api/customers', customerRoutes(pool, io));
     app.use('/api/tasks', taskRoutes(pool, io));
     app.use('/api/deals', dealRoutes(pool, io));
     app.use('/api/reports', reportRoutes(pool, io));
     app.use('/api/notifications', notificationRoutes(pool, io));
-    app.use('/api/advanced-analytics', analyticsRoutes(pool, io)); // Thêm route mới
+    app.use('/api/advanced-analytics', analyticsRoutes(pool, io));
 
     io.on('connection', (socket) => {
       console.log('A user connected:', socket.id);
